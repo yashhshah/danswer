@@ -14,7 +14,7 @@ INDEXING_MODEL_SERVER_PORT = int(
 )
 
 # Danswer custom Deep Learning Models
-INTENT_MODEL_VERSION = "danswer/intent-model"
+INTENT_MODEL_VERSION = os.environ.get("INTENT_MODEL_VERSION") or "danswer/intent-model"
 INTENT_MODEL_CONTEXT_SIZE = 256
 
 # Bi-Encoder, other details

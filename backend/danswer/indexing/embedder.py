@@ -15,6 +15,7 @@ from danswer.natural_language_processing.search_nlp_models import EmbeddingModel
 from danswer.utils.logger import setup_logger
 from shared_configs.configs import INDEXING_MODEL_SERVER_HOST
 from shared_configs.configs import INDEXING_MODEL_SERVER_PORT
+from shared_configs.enums import EmbeddingProvider
 from shared_configs.enums import EmbedTextType
 from shared_configs.model_server_models import Embedding
 
@@ -29,7 +30,7 @@ class IndexingEmbedder(ABC):
         normalize: bool,
         query_prefix: str | None,
         passage_prefix: str | None,
-        provider_type: str | None,
+        provider_type: EmbeddingProvider | None,
         api_key: str | None,
     ):
         self.model_name = model_name
@@ -54,7 +55,7 @@ class DefaultIndexingEmbedder(IndexingEmbedder):
         normalize: bool,
         query_prefix: str | None,
         passage_prefix: str | None,
-        provider_type: str | None = None,
+        provider_type: EmbeddingProvider | None = None,
         api_key: str | None = None,
     ):
         super().__init__(
@@ -161,6 +162,19 @@ class DefaultIndexingEmbedder(IndexingEmbedder):
             embedding_ind_start += num_embeddings
 
         return embedded_chunks
+
+    @classmethod
+    def from_db_embedding_model(
+        cls, embedding_model: DbEmbeddingModel
+    ) -> "DefaultIndexingEmbedder":
+        return cls(
+            model_name=embedding_model.model_name,
+            normalize=embedding_model.normalize,
+            query_prefix=embedding_model.query_prefix,
+            passage_prefix=embedding_model.passage_prefix,
+            provider_type=embedding_model.provider_type,
+            api_key=embedding_model.api_key,
+        )
 
 
 def get_embedding_model_from_db_embedding_model(

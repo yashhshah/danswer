@@ -1,14 +1,7 @@
 "use client";
 
-import { FiArrowDown, FiEdit, FiFolderPlus } from "react-icons/fi";
-import {
-  Dispatch,
-  ForwardedRef,
-  forwardRef,
-  SetStateAction,
-  useContext,
-  useEffect,
-} from "react";
+import { FiEdit, FiFolderPlus } from "react-icons/fi";
+import { ForwardedRef, forwardRef, useContext, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChatSession } from "../interfaces";
@@ -26,10 +19,7 @@ import {
   ClosedBookIcon,
 } from "@/components/icons/icons";
 import { PagesTab } from "./PagesTab";
-import { Tooltip } from "@/components/tooltip/Tooltip";
-import KeyboardSymbol from "@/lib/browserUtilities";
 import { pageType } from "./types";
-import { usePaidEnterpriseFeaturesEnabled } from "@/components/settings/usePaidEnterpriseFeaturesEnabled";
 import LogoType from "@/components/header/LogoType";
 
 interface HistorySidebarProps {
@@ -42,6 +32,8 @@ interface HistorySidebarProps {
   toggled?: boolean;
   removeToggle?: () => void;
   reset?: () => void;
+  showShareModal?: (chatSession: ChatSession) => void;
+  showDeleteModal?: (chatSession: ChatSession) => void;
 }
 
 export const HistorySidebar = forwardRef<HTMLDivElement, HistorySidebarProps>(
@@ -56,6 +48,8 @@ export const HistorySidebar = forwardRef<HTMLDivElement, HistorySidebarProps>(
       openedFolders,
       toggleSidebar,
       removeToggle,
+      showShareModal,
+      showDeleteModal,
     },
     ref: ForwardedRef<HTMLDivElement>
   ) => {
@@ -112,17 +106,29 @@ export const HistorySidebar = forwardRef<HTMLDivElement, HistorySidebarProps>(
             page={page}
             toggleSidebar={toggleSidebar}
           />
-
           {page == "chat" && (
             <div className="mx-3 mt-4 gap-y-1 flex-col flex gap-x-1.5 items-center items-center">
-              <button
-                onClick={handleNewChat}
+              <Link
                 className="w-full p-2 bg-white border-border border rounded items-center hover:bg-background-200 cursor-pointer transition-all duration-150 flex gap-x-2"
+                href={
+                  `/${page}` +
+                  (NEXT_PUBLIC_NEW_CHAT_DIRECTS_TO_SAME_PERSONA &&
+                  currentChatSession?.persona_id
+                    ? `?assistantId=${currentChatSession?.persona_id}`
+                    : "")
+                }
+                onClick={(e) => {
+                  if (e.metaKey || e.ctrlKey) {
+                    return;
+                  }
+                  if (handleNewChat) {
+                    handleNewChat();
+                  }
+                }}
               >
                 <FiEdit className="flex-none " />
                 <p className="my-auto flex items-center text-sm">New Chat</p>
-              </button>
-
+              </Link>
               <button
                 onClick={() =>
                   createFolder("New Folder")
@@ -166,6 +172,8 @@ export const HistorySidebar = forwardRef<HTMLDivElement, HistorySidebarProps>(
           )}
           <div className="border-b border-border pb-4 mx-3" />
           <PagesTab
+            showDeleteModal={showDeleteModal}
+            showShareModal={showShareModal}
             closeSidebar={removeToggle}
             page={page}
             existingChats={existingChats}

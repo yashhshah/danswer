@@ -1,3 +1,5 @@
+import type { APIKeyArgs, APIKey } from "@/app/ee/admin/api-key/types";
+
 export const createApiKey = async (apiKeyArgs: APIKeyArgs) => {
   return fetch("/api/admin/api-key", {
     method: "POST",

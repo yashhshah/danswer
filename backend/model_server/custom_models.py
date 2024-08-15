@@ -11,7 +11,7 @@ from model_server.danswer_torch_model import HybridClassifier
 from model_server.utils import simple_log_function_time
 from shared_configs.configs import INDEXING_ONLY
 from shared_configs.configs import INTENT_MODEL_TAG
-from shared_configs.configs import INTENT_MODEL_VERSION
+from shared_configs.configs import INTENT_MODEL_VERSION, IS_LOCAL_INTENT_MODEL_PATH
 from shared_configs.model_server_models import IntentRequest
 from shared_configs.model_server_models import IntentResponse
 
@@ -35,21 +35,24 @@ def get_intent_model_tokenizer() -> AutoTokenizer:
 def get_local_intent_model(
     model_name_or_path: str = INTENT_MODEL_VERSION,
     tag: str = INTENT_MODEL_TAG,
+    is_local_model: bool = True,
 ) -> HybridClassifier:
     global _INTENT_MODEL
     if _INTENT_MODEL is None:
+        logger.info(f"Loading Intent Model: {model_name_or_path}")
         try:
             # Calculate where the cache should be, then load from local if available
             local_path = snapshot_download(
                 repo_id=model_name_or_path, revision=tag, local_files_only=True
-            )
+            ) if not is_local_model else model_name_or_path
             _INTENT_MODEL = HybridClassifier.from_pretrained(local_path)
         except Exception as e:
             logger.warning(f"Failed to load model directly: {e}")
             try:
                 # Attempt to download the model snapshot
                 logger.info(f"Downloading model snapshot for {model_name_or_path}")
-                local_path = snapshot_download(repo_id=model_name_or_path, revision=tag)
+                local_path = model_name_or_path if is_local_model else snapshot_download(repo_id=model_name_or_path, revision=tag)
+                logger.info(f"Loading model from snapshot: {local_path}")
                 _INTENT_MODEL = HybridClassifier.from_pretrained(local_path)
             except Exception as e:
                 logger.error(

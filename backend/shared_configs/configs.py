@@ -14,7 +14,8 @@ INDEXING_MODEL_SERVER_PORT = int(
 )
 
 # Danswer custom Deep Learning Models
-INTENT_MODEL_VERSION = os.environ.get("INTENT_MODEL_VERSION") or "danswer/hybrid-intent-token-classifier"
+INTENT_MODEL_VERSION = os.environ.get("INTENT_MODEL_VERSION")
+IS_LOCAL_INTENT_MODEL_PATH = os.environ.get("IS_LOCAL_INTENT_MODEL_PATH", "").lower() == "true" or False
 INTENT_MODEL_TAG = "v1.0.3"
 
 # Bi-Encoder, other details

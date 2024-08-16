@@ -5,6 +5,9 @@ import torch
 import torch.nn as nn
 from transformers import DistilBertConfig  # type: ignore
 from transformers import DistilBertModel
+from danswer.utils.logger import setup_logger
+
+logger = setup_logger()
 
 
 class HybridClassifier(nn.Module):
@@ -46,9 +49,10 @@ class HybridClassifier(nn.Module):
 
     @classmethod
     def from_pretrained(cls, load_directory: str) -> "HybridClassifier":
-        model_path = os.path.join(load_directory, "pytorch_model.bin")
-        config_path = os.path.join(load_directory, "config.json")
-
+        model_path = os.path.join(load_directory.replace('"', ''), "pytorch_model.bin")
+        config_path = os.path.join(load_directory.replace('"', ''), "config.json")
+        # print current working directory
+        logger.info(f"Current working directory: {os.getcwd()}")
         with open(config_path, "r") as f:
             config = json.load(f)
         model = cls(**config)
